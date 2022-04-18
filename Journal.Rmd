@@ -1,5 +1,5 @@
 ---
-title: "Journal"
+title: "Weather & Fatality Rates"
 output:
   html_document:
     toc: true
@@ -14,115 +14,219 @@ output:
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 ```
 
-IMPORTANT: You can delete everything in here and start fresh. You might want to start by not deleting anything above this line until you know what that stuff is doing.
 
+The following packages were loaded into RStudio to for data wrangling and to reproduce this report:
 
-This is an .Rmd file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
+library(readr)
+library(foreign) 
+library(rvest) 
+library(knitr) 
+library(dplyr)
+library(openxlsx)
+library(magrittr)
+library(tidyr)
+library(glue)
 
-# My first post
-
-2018 | 7 | 23 Last compiled: `r Sys.Date()`
-
-Notice that whatever you define as a top level header, automatically gets put into the table of contents bar on the left. 
-
-## Second level header
-
-You can add more headers by adding more hashtags. These won't be put into the table of contents
-
-### third level header
-
-Here's an even lower level header
-
-# My second post (note the order)
-
-2018 | 7 | 23 Last compiled: `r Sys.Date()`
-
-I'm writing this tutorial going from the top down. And, this is how it will be printed. So, notice the second post is second in the list. If you want your most recent post to be at the top, then make a new post starting at the top. If you want the oldest first, do, then keep adding to the bottom
-
-# Adding R stuff
-
-So far this is just a blog where you can write in plain text and serve your writing to a webpage. One of the main purposes of this lab journal is to record your progress learning R. The reason I am asking you to use this process is because you can both make a website, and a lab journal, and learn R all in R-studio. This makes everything really convenient and in the sam place. 
-
-So, let's say you are learning how to make a histogram in R. For example, maybe you want to sample 100 numbers from a normal distribution with mean = 0, and standard deviation =1, and then you want to plot a histogram. You can do this right here by using an r code block, like this:
-
-```{r}
-samples <- rnorm(100, mean=0, sd=1)
-hist(samples)
+```{r, echo = TRUE, warning = FALSE, results = FALSE}
+setwd("~/Data Wrangling R files/Data")
+library(readr)
+library(foreign) 
+library(rvest) 
+library(knitr) 
+library(dplyr)
+library(openxlsx)
+library(magrittr)
+library(tidyr)
+library(glue)   
 ```
 
-When you knit this R Markdown document, you will see that the histogram is printed to the page, along with the R code. This document can be set up to hide the R code in the webpage, just delete the comment (hashtag), from the cold folding option in the yaml header up top. For purposes of letting yourself see the code, and me see the code, best to keep it the way that it is. You learn all of these things and more can be customized in each R code block.
 
-# The big idea
-
-Use this lab journal to record what you do in R. This way I will be able to see what you are doing and help you along the way. You will also be creating a repository of all the things you do. You can make posts about everything. Learning specific things in R (project unrelated), and doing things for the project that we will discuss at the beginning of the Fall semester. You can get started now by fiddling around with googling things, and trying stuff out in R. I've placed some helpful starting links in the links page on this website
-
-# What can you do right now by yourself?
-
-It's hard to learn programming when you don't have specific problems that you are trying to solve. Everything just seems abstract.
-
-I wrote an [introductory programming book that introduces R](https://crumplab.github.io/programmingforpsych/), and gives some [concrete problems for you to solve](https://crumplab.github.io/programmingforpsych/programming-challenges-i-learning-the-fundamentals.html). 
-
-To get the hang of journaling and solving the problems to learn programming, my suggestion is that you use this .Rmd file to solve the problems. It would look like this:
-
-# Problem 1
-
-Do simple math with numbers, addition, subtraction, multiplication, division
+A data set was sourced from 'Our World in Data' website and read into the RStudio environment using the 'read.csv'.  
 
 ```{r}
-1+2
-2*5
-5/3
-(1+6+4)/5
-
+fatalityrates1 <- read.csv("fatality-rates-us-due-to-weather-events.csv")
 ```
 
-# Problem 2
 
-Put numbers into variables, do simple math on the variables
+The data used for this report named "Mortality Rates in the US Due to Weather Events" was sourced from Our World In Data which is an open source data website (https://ourworldindata.org/grapher/fatality-rates-in-the-us-due-to-weather-events?country=~USA).
 
-```{r}
-a<-1
-b<-2
-a+b
+The data was presented as a visualization on the website which can be seen below. This data is also presented in table form which was downloaded for the purpose of this project. :
 
-d<-c(1,2,3)
-e<-c(5,6,7)
-d+e
-d*e
-d/e
+<iframe src="https://ourworldindata.org/grapher/fatality-rates-in-the-us-due-to-weather-events?country=~USA" loading="lazy" style="width: 100%; height: 600px; border: 0px none;"></iframe>
 
+
+The data comprises of multiple weather events and their associated mortality rate per million individuals measured over a century on a yearly basis. The variables in this dataset can be seen in the head of the dataset below.
+
+The data was inspected using the view(), head(), tail() and str() functions.
+
+```{r, echo = TRUE, warning = FALSE}
+View(fatalityrates1) 
 ```
 
-# Problem 3
+```{r, echo = TRUE, warning = FALSE}
+head(fatalityrates1)
+```
 
-Write code that will place the numbers 1 to 100 separately into a variable using for loop. Then, again using the seq function.
+```{r, echo = TRUE, warning = FALSE}
+tail(fatalityrates1)
+```
 
-```{r}
-# for loop solution
-# i becomes the number 1 to 100 at each step of the loop
+```{r, echo = TRUE, warning = FALSE}
+str(fatalityrates1)
+```
 
+Once the data type of each variable was established, each variable was transformed into the correct data type to enable further data manipulation.
+This was done using the "<- as.factor" function.
 
-a <- length(100) # make empty variable, set length to 100
-for (i in 1:100){
-  a[i] <-i #assigns the number in i, to the ith index of a
-}
+```{r, echo = TRUE, warning = FALSE}
+fatalityrates1$YearFac <- as.factor(fatalityrates1$Year)
+fatalityrates1$CodeFac <- as.factor(fatalityrates1$Code)
+fatalityrates1$EntityFac <- as.factor(fatalityrates1$Entity)
+```
 
-print(a)
+The variables were rearranged for ease of analysis using the "arrange(desc())" function.
 
-# for loop solution #2
+```{r, echo = TRUE, warning = FALSE}
+fatalityrates1 %<>%
+  arrange(desc(Year))
+```
 
-a<-c() #create empty variable using combine command
-for (i in 1:100){
-  a<-c(a,i) # keeps combining a with itself and the new number in i
-}
-print(a)
+A new data frame "fatalityratesnew" was created with the newly converted data types taking only the first 20 rows using the "[]" subset function. The reason for this sub selection was because the large dataset spanning across 115 years contained mostly null variables for majority of the different weather events prior to 1995 which did not make for interesting comparison. It is also not useful to compare mortality rates across such a broad time span as there may be confounding for medical care and treatments that wer available across the century. 
 
-# seq solution
-a <- seq(1,100,1) # look up help for seq using ?seq() in console
-print(a)
+Column names were assigned to the dataset using "colnames()" and the structure was re-evaluated using "str()".
+
+```{r, echo = TRUE, warning = FALSE}
+fatalityratesnew <- fatalityrates1[1:20,c("EntityFac", "YearFac", "Wind", "Rip.Current", "Winter", "Cold","Heat","Hurricane","Tornado", "Flood", "Lightning")]
+colnames(fatalityratesnew)<- c("Entity","Year", "Wind", "RipOrCurrent", "Winter", "Cold","Heat","Hurricane","Tornado", "Flood", "Lightning")
+str(fatalityratesnew)
+```
+
+The data was in wide format in that each variable of weather event was in its own column instead of being listed down the rows as a variable type (Wickham, 2014).
+The data was pivoted into long format and the new variable which was created was transformed from the character to a factor. The "df%<>%pivot_longer(cols=c())" was used.
+
+```{r, echo = TRUE, warning = FALSE}
+
+fatalityratesnew %<>%
+  pivot_longer(cols=c("Wind", "RipOrCurrent", "Winter", "Cold","Heat","Hurricane","Tornado", "Flood", "Lightning"), names_to="Type", values_to="RatePerMillion")
+fatalityratesnew$Type <- as.factor(fatalityratesnew$Type)
+str(fatalityratesnew)
 
 ```
 
-# Replace this with problem 4
+There were two categorical variables which were looked at for summary statistics and grouped together by the numeric variable of mortality rate per million.
+Firstly the mean mortality rates were compared year by year using the "group_by()" function and the "summarise()" function. 
 
-And keep going. Try to solve the problems with different scripts that provide the same solution. Good luck, Happy coding.
+
+```{r, echo = TRUE, warning = FALSE}
+fatalityratesnew %>% 
+  group_by(Year) %>% 
+  summarise(mean_RatePerMillion = mean(RatePerMillion, na.rm = TRUE))
+
+
+```
+
+Secondly, a full summary statistics set was ran for the type of weather event against the mortality rate per million. 
+
+```{r, echo = TRUE, warning = FALSE}
+fatalityratesnew %>% 
+  group_by(Type) %>% 
+  summarise(Min_RatePerMillion = min(RatePerMillion, na.rm = TRUE), 
+            Q1_RatePerMillion = quantile(RatePerMillion, probs = 0.25, na.rm = TRUE), 
+            Median_RatePerMillion = median(RatePerMillion, na.rm = TRUE), 
+            Q3_RatePerMillion = quantile(RatePerMillion, probs = 0.75, na.rm = TRUE), 
+            Max_RatePerMillion = max(RatePerMillion, na.rm = TRUE), 
+            Mean_RatePerMillion = mean(RatePerMillion, na.rm = TRUE), 
+            SD_RatePerMillion = sd(RatePerMillion, na.rm = TRUE), 
+            Missing_RatePerMillion = sum(is.na(RatePerMillion)), 
+            n = n())
+
+```
+
+A list of the numbers 1 to 9 was created to represent each type of weather event. These were created into a dataframe with the corresponding weather event listed and named using the "newdf <- data.frame" function. 
+
+```{r, echo = TRUE, warning = FALSE}
+newdf <- data.frame (TypeNumber = 1:9,
+                   Type = c("Wind", "RipOrCurrent", "Winter", "Cold", "Heat", "Hurricane", "Tornado", "Flood", "Lightning"))
+newdf
+
+```
+
+The above list was then joint to the transformed data frame using a left join in order to assign each number to its corresponding weather event type using the "<- left_join()" function. 
+
+```{r, echo = TRUE, warning = FALSE}
+JoinedFatality <- left_join(fatalityratesnew, newdf, by = c("Type"))
+
+JoinedFatality
+```
+
+A subset was created from the new data frame using the first 10 rows of the dataset across all the variables using the "[row,cols()]" subset function.
+
+```{r, echo = TRUE, warning = FALSE}
+
+fatalitysubset1 <- JoinedFatality[1:10,c("Entity", "Year", "Type", "RatePerMillion", "TypeNumber")]
+
+fatalitysubset1
+
+```
+
+The subset was then converted into a matrix using the "<- as.matrix()". The structure of the matrix was a character. This is because the subset from the previous dataset contained both numeric and factor variable so RStudio will automatically label these both to character data type. 
+
+```{r, echo = TRUE, warning = FALSE}
+fatalitymatrix <- as.matrix(fatalitysubset1)
+
+str(fatalitymatrix)
+```
+
+The data frame was again subsetted using the [] function, this time only including the first and last variable in the data set. It was then saved as an R object file.
+
+```{r, echo = TRUE, warning = FALSE}
+fatalitysubset2 <- JoinedFatality[c(1,180), c(1,5)]
+
+fatalitysubset2
+
+```
+
+A new data frame was created using the two variables named "Temperature" and "Degrees", one a ordinal variable and one an integer variable respectively. 
+
+```{r, echo = TRUE, warning = FALSE}
+holidaydf <- data.frame(Temperature = c("Freezing", "Cool", "Mild", "Warm", "Hot"),
+                        Degrees= c(0, 10, 20, 30, 40))
+
+
+str(holidaydf)
+```
+Another numeric vector was created and "cbind()" function was used to add this vector to the "holidaydf" 
+
+```{r, echo = TRUE, warning = FALSE}
+Ranking <- factor(c(1:5))
+                    
+holidaydf2  <-cbind(holidaydf, Ranking)                
+
+holidaydf2                   
+```
+
+Another data frame was created with the "Degrees" common variable to the previous dataframe but with another variable included called "Activity".
+
+```{r, echo = TRUE, warning = FALSE}
+holidaydf3 <- data.frame(Degrees  = c(0, 10, 20, 30, 40),
+                   Activity = c("Skiing", "Hiking", "Tennis", "Walking", "Swimming"))
+holidaydf3
+```
+The above data frame was joined to a new dataframe named "HolidayJoined" using a left join to align the "Activity" variable with its respective variable "Degrees" in the previous dataset. 
+```{r, echo = TRUE, warning = FALSE}
+HolidayJoined <- left_join(holidaydf2, holidaydf3, by = c("Degrees"))
+
+HolidayJoined
+
+```
+
+
+## References:
+
+Wickham, H 2014, 'Tidy Data (Links to an external site.)', Journal of Statistical Software, vol. 59, no.10, pp. 1-23.
+
+
+
+
+<br>
+<br>

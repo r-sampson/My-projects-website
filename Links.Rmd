@@ -1,19 +1,372 @@
 ---
-title: "Resources"
-output: html_document
+title: "Pollution & Hospital Admissions"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    #code_folding: hide
 ---
 
-### R and R-Studio
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+```
 
-[R](http://www.r-project.org) is a free open-source programming language that can be used for statistical analysis, data-simulation, graphing, and lots of other stuff. Another free program is [R-studio](http://www.rstudio.com), that provides a nice graphic interface for R. Download R first, then download R-studio. Both can run on PCs, Macs or Linux. Students will be learning R in the stats labs using the lab manual []().
+---
+title: "Data Wrangling Assessment Task 3: Dataset challenge"
+author: "Rachael Sampson s3920151"
+subtitle: 
+output:
+  html_notebook: default
+---
 
-### Additional R resources
+## 2. Required packages
+The following packages were loaded into RStudio to for data wrangling and to reproduce this report:
+library(readr)  
+library(foreign)  
 
-1. Google is great, Google your problem
-2. [Stackoverflow](https://stackoverflow.com) is great, google will often take you there because someone has already asked your question, and someone else has answered, usually many people have answered your question many ways.
-3. Danielle Navarro wrote a [free Psych Stats textbook using R](https://compcogscisydney.org/learning-statistics-with-r/), it's worth checking out (some of our textbook are based on Danielle's)
-4. I am currently writing another stats textbook (incorporating some of the above). You can read it while it's being made right here [https://crumplab.github.io/statistics/](https://crumplab.github.io/statistics/), also check out the lab manual for more specific things about doing various stats in R (also in draft right now) [https://crumplab.github.io/statisticsLab/](https://crumplab.github.io/statisticsLab/)
-5. Daniell Navarro recently made this website for introducing R, it's great, check it out (also made using this R markdown process): [http://compcogscisydney.org/psyr/](http://compcogscisydney.org/psyr/)
-6. Check out my slightly older programming book that also introduces R [https://crumplab.github.io/programmingforpsych/](https://crumplab.github.io/programmingforpsych/)
-7. This is the definitive guide for all things R Markdown (you will find this very useful as you get better at this skill): [https://bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/)
+library(rvest)  
+library(knitr) 
+library(dplyr)
+library(openxlsx)
+library(magrittr)
+library(tidyr)
+library(glue)
+
+library(stringr)
+library(deducorrect) 
+library(deductive)
+library(validate)
+library(Hmisc)
+library(MVN)
+library(forecast)
+
+
+```{r, warning=FALSE, message=FALSE, results=FALSE}
+library(readr)
+library(foreign) 
+library(rvest) 
+library(knitr) 
+library(dplyr)
+library(openxlsx)
+library(magrittr)
+library(tidyr)
+library(glue)
+library(stringr)
+library(deducorrect) 
+library(deductive)
+library(validate)
+library(Hmisc)
+library(MVN)
+library(forecast)
+```
+
+## 3. Data
+
+The data sets used for this report were sourced from Kaggle which is an open source data website (https://www.kaggle.com/ashishsahani/hospital-admissions-data). Titled "Hospital Admissions Data Two Year Hospital Admissions and Discharge Data from Hero DMC Heart Institute", the data was available for download in 2 different dataset CSV files collected from a hospital in Ludhiana, India. The variables from the first dataset comprise of hospital admission rates by date, with correlating data about each patients hospital admission. This included blood results, comorbodities of the patient, length of stay in hospital and also information about the medical events whilst in hospital. The second dataset comprises variables including pollution levels, common markers of pollution measured on dates correlating to the hospital admission dates in the first data set. The data was loaded into R using the 'read.csv' function.
+
+```{r, echo = TRUE, warning = FALSE}
+admission_data <- read.csv("HDHI Admission data.csv")
+pollution_data <- read.csv("HDHI Pollution Data.csv")
+```
+
+Head() and tail() show a snapshot of both the data sets. 
+```{r, echo = TRUE, warning = FALSE}
+head(admission_data)
+```
+```{r, echo = TRUE, warning = FALSE}
+tail(admission_data)
+```
+
+
+```{r, echo = TRUE, warning = FALSE}
+head(pollution_data)
+```
+```{r, echo = TRUE, warnings = FALSE}
+tail(pollution_data)
+```
+Str() shows the structure of each dataset. The admission data set contained 15,757 observations of 58 variables. 
+```{r, echo = TRUE, warning = FALSE}
+str(admission_data)
+```
+Column names of the dataset were renamed to enable ease of understanding variables for anyone reading. They were originally named in medical abbreviations.
+```{r, echo = TRUE, warning = FALSE}
+colnames(admission_data)<- c("Serial.Number", "Record.Number", "Admission.Date", "Discharge.Date", "Age", "Gender", "Rural.or.Urban", "Admission.Type", "Month.Year","Total.Days.Admitted","Days.ICU.Admission","Outcome", "Smoker", "Alcohol", "Diabetes", "Hypertension", "Coronary.Artery.Disease", "Cardiomyopathy", "Chronic.Kidney.Disease", "Haemoglobin", "Leukocytes.Count", "Platelets", "Glucose", "Urea", "Creatinine", "BType.Natriuretic.Peptide", "Cardiac.Enzymes", "Ejection.Fraction", "Severe.Anaemia", "Anaemia", "Stable.Angina", "Acute.Coronary.Syndrome","STEMI", "Atypical.Chestpain", "Heart.Failure", "Heart.Failure.With.Reduced.Ejection.Fraction","Heart.Failure.With.Normal.Ejection.Fraction","Valvular.Heart.Disease", "Complete.Heart.Block","Sick.Sinus.Syndrome","Acute.Kidney.Injury","Cerebrovascular.Accident.Infarct", "Cerebrovascular.Accident.Bleed","Atrial.Fibrilation","Ventricular.Tachycardia", "Paroxysmal.Supra.Ventricular.Tachycardia", "Congenital.Heart.Disease","Urinary.Tract.Infection", "Neuro.Cardiogenic.Syncope","Orthstatic", "Infective.Endocarditis", "Deep.venous.Thrombosis","Cardiogenic.Shock","Shock","Pulmonary.Embolism", "Chest.Infection")
+
+```
+
+Two new columns were created to summarize the comorbidities by a scoring system and the medical events total.
+
+```{r, echo = TRUE, warnings = FALSE}
+admission_data$Comorbidity.Total <- admission_data$Smoker + admission_data$Alcohol + admission_data$Diabetes + admission_data$Hypertension + admission_data$Coronary.Artery.Disease + admission_data$Cardiomyopathy + admission_data$Chronic.Kidney.Disease 
+```
+One of the variables data type was required to be changed for the purpose of creating the new columns.
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+admission_data$Chest.Infection <- as.integer(admission_data$Chest.Infection)
+```
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+admission_data$Medical.Event.Total <- admission_data$Severe.Anaemia + admission_data$Anaemia + admission_data$Stable.Angina + admission_data$Acute.Coronary.Syndrome + admission_data$STEMI + admission_data$Atypical.Chestpain + admission_data$Heart.Failure + admission_data$Heart.Failure.With.Reduced.Ejection.Fraction + admission_data$Heart.Failure.With.Normal.Ejection.Fraction + admission_data$Valvular.Heart.Disease + admission_data$Complete.Heart.Block + admission_data$Sick.Sinus.Syndrome + admission_data$Acute.Kidney.Injury + admission_data$Cerebrovascular.Accident.Infarct + admission_data$Cerebrovascular.Accident.Bleed + admission_data$Atrial.Fibrilation + admission_data$Ventricular.Tachycardia + admission_data$Paroxysmal.Supra.Ventricular.Tachycardia + admission_data$Congenital.Heart.Disease + admission_data$Urinary.Tract.Infection + admission_data$Neuro.Cardiogenic.Syncope + admission_data$Orthstatic + admission_data$Infective.Endocarditis + admission_data$Deep.venous.Thrombosis + admission_data$Cardiogenic.Shock + admission_data$Shock + admission_data$Pulmonary.Embolism + admission_data$Chest.Infection
+```
+
+
+Some of the categorical variables were re-labelled so that the variables had significance to anyone reading the report instead of having to interpret codes.
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+admission_data$Rural.or.Urban <- str_replace_all(admission_data$Rural.or.Urban, "R", "Rural") 
+admission_data$Rural.or.Urban <- str_replace_all(admission_data$Rural.or.Urban, "U", "Urban")
+admission_data$Admission.Type <- str_replace_all(admission_data$Admission.Type, "E", "Emergency")
+admission_data$Admission.Type <- str_replace_all(admission_data$Admission.Type, "O", "Outpatient")
+```
+
+The pollution data set contained 737 observations of 27 variables. 
+```{r, echo = TRUE, warning = FALSE}
+str(pollution_data)
+```
+The pollution data headings were also renamed so that the variables had significance to anyone who reads this data report and does not know the chemical abbreviations. 
+```{r, echo = TRUE, warnings = FALSE}
+
+pollution_data1 <- pollution_data[,c("ï..DATE", "AQI", "PM2.5.AVG", "PM10.AVG", "NO2.AVG", "NH3.AVG","SO2.AVG","CO.AVG", "OZONE.AVG", "PROMINENT.POLLUTENT", "MAX.TEMP", "MIN.TEMP", "HUMIDITY")]
+colnames(pollution_data1)<- c("Admission.Date","Air.Quality.Index", "Particulate.Matter2.5", "Particulate.Matter10", "Nitrogren.Dioxide", "Ammonia","Sulpher.Dioxide","Carbon.Monoxide","Ozone", "Prominent.Pollution", "Maximum.Temperature", "Minimum.Temperature", "Humidity")
+```
+The two datasets were then merged to create one large dataset with 70 variables using a left join using the "Admission.Date" variable as the joiner.  
+```{r, echo = TRUE, warning = FALSE}
+joined_admissions_pollution1 <- left_join(admission_data, pollution_data1, by = c("Admission.Date"))
+```
+
+## 4. Understand 
+
+The structure of the new data frame was assessed after the merge. 
+```{r, echo = TRUE, warning = FALSE}
+str(joined_admissions_pollution1)
+```
+Multiple variables were found to have incorrect data types automatically assigned to them. In the steps below firstly the date variables were listed as characters, so were changed to dates using the as.Date() function, ensuring the existing format was passed through as "%m/%d/%Y". Character data types that should have been factors were changed to factors using the as.factor() function. There were multiple logical variables that need to be changed from intergers using the as.logical() function. 
+
+```{r, echo = TRUE, warning = FALSE}
+joined_admissions_pollution1$Admission.Date <- as.Date(joined_admissions_pollution1$Admission.Date, format = "%m/%d/%Y")
+joined_admissions_pollution1$Discharge.Date <- as.Date(joined_admissions_pollution1$Discharge.Date, format = "%m/%d/%Y")
+joined_admissions_pollution1$Gender <- as.factor(joined_admissions_pollution1$Gender)
+joined_admissions_pollution1$Rural.or.Urban <- as.factor(joined_admissions_pollution1$Rural.or.Urban)
+joined_admissions_pollution1$Admission.Type <- as.factor(joined_admissions_pollution1$Admission.Type)
+joined_admissions_pollution1$Outcome <- as.factor(joined_admissions_pollution1$Outcome)
+joined_admissions_pollution1$Smoker <- as.logical(joined_admissions_pollution1$Smoker)
+joined_admissions_pollution1$Alcohol <- as.logical(joined_admissions_pollution1$Alcohol)
+joined_admissions_pollution1$Diabetes <- as.logical(joined_admissions_pollution1$Diabetes)
+joined_admissions_pollution1$Hypertension <- as.logical(joined_admissions_pollution1$Hypertension)
+joined_admissions_pollution1$Coronary.Artery.Disease <- as.logical(joined_admissions_pollution1$Coronary.Artery.Disease)
+joined_admissions_pollution1$Cardiomyopathy <- as.logical(joined_admissions_pollution1$Cardiomyopathy)
+joined_admissions_pollution1$Chronic.Kidney.Disease <- as.logical(joined_admissions_pollution1$Chronic.Kidney.Disease)
+joined_admissions_pollution1$Haemoglobin <- as.numeric(joined_admissions_pollution1$Haemoglobin)
+joined_admissions_pollution1$Leukocytes.Count <- as.numeric(joined_admissions_pollution1$Leukocytes.Count)
+joined_admissions_pollution1$Platelets <- as.numeric(joined_admissions_pollution1$Platelets)
+joined_admissions_pollution1$Glucose <- as.numeric(joined_admissions_pollution1$Glucose)
+joined_admissions_pollution1$Urea <- as.numeric(joined_admissions_pollution1$Urea)
+joined_admissions_pollution1$Creatinine <- as.numeric(joined_admissions_pollution1$Creatinine)
+joined_admissions_pollution1$BType.Natriuretic.Peptide <- as.numeric(joined_admissions_pollution1$BType.Natriuretic.Peptide)
+joined_admissions_pollution1$Cardiac.Enzymes <- as.numeric(joined_admissions_pollution1$Cardiac.Enzymes)
+joined_admissions_pollution1$Ejection.Fraction <- as.numeric(joined_admissions_pollution1$Ejection.Fraction)
+joined_admissions_pollution1$Severe.Anaemia <- as.logical(joined_admissions_pollution1$Severe.Anaemia)
+joined_admissions_pollution1$Anaemia <- as.logical(joined_admissions_pollution1$Anaemia)
+joined_admissions_pollution1$Stable.Angina <- as.logical(joined_admissions_pollution1$Stable.Angina)
+joined_admissions_pollution1$Acute.Coronary.Syndrome <- as.logical(joined_admissions_pollution1$Acute.Coronary.Syndrome)
+joined_admissions_pollution1$STEMI <- as.logical(joined_admissions_pollution1$STEMI)
+joined_admissions_pollution1$Atypical.Chestpain <- as.logical(joined_admissions_pollution1$Atypical.Chestpain)
+joined_admissions_pollution1$Heart.Failure <- as.logical(joined_admissions_pollution1$Heart.Failure)
+joined_admissions_pollution1$Heart.Failure.With.Reduced.Ejection.Fraction <- as.logical(joined_admissions_pollution1$Heart.Failure.With.Reduced.Ejection.Fraction)
+joined_admissions_pollution1$Heart.Failure.With.Normal.Ejection.Fraction <- as.logical(joined_admissions_pollution1$Heart.Failure.With.Normal.Ejection.Fraction)
+joined_admissions_pollution1$Valvular.Heart.Disease <- as.logical(joined_admissions_pollution1$Valvular.Heart.Disease)
+joined_admissions_pollution1$Complete.Heart.Block <- as.logical(joined_admissions_pollution1$Complete.Heart.Block)
+joined_admissions_pollution1$Sick.Sinus.Syndrome <- as.logical(joined_admissions_pollution1$Sick.Sinus.Syndrome)
+joined_admissions_pollution1$Acute.Kidney.Injury <- as.logical(joined_admissions_pollution1$Acute.Kidney.Injury)
+joined_admissions_pollution1$Cerebrovascular.Accident.Infarct <- as.logical(joined_admissions_pollution1$Cerebrovascular.Accident.Infarct)
+joined_admissions_pollution1$Cerebrovascular.Accident.Bleed <- as.logical(joined_admissions_pollution1$Cerebrovascular.Accident.Bleed)
+joined_admissions_pollution1$Atrial.Fibrilation <- as.logical(joined_admissions_pollution1$Atrial.Fibrilation)
+joined_admissions_pollution1$Ventricular.Tachycardia <- as.logical(joined_admissions_pollution1$Ventricular.Tachycardia)
+joined_admissions_pollution1$Paroxysmal.Supra.Ventricular.Tachycardia <- as.logical(joined_admissions_pollution1$Paroxysmal.Supra.Ventricular.Tachycardia)
+joined_admissions_pollution1$Congenital.Heart.Disease <- as.logical(joined_admissions_pollution1$Congenital.Heart.Disease)
+joined_admissions_pollution1$Urinary.Tract.Infection <- as.logical(joined_admissions_pollution1$Urinary.Tract.Infection)
+joined_admissions_pollution1$Neuro.Cardiogenic.Syncope <- as.logical(joined_admissions_pollution1$Neuro.Cardiogenic.Syncope)
+joined_admissions_pollution1$Orthstatic <- as.logical(joined_admissions_pollution1$Orthstatic)
+joined_admissions_pollution1$Infective.Endocarditis <- as.logical(joined_admissions_pollution1$Infective.Endocarditis)
+joined_admissions_pollution1$Deep.venous.Thrombosis <- as.logical(joined_admissions_pollution1$Deep.venous.Thrombosis)
+joined_admissions_pollution1$Cardiogenic.Shock <- as.logical(joined_admissions_pollution1$Cardiogenic.Shock)
+joined_admissions_pollution1$Shock <- as.logical(joined_admissions_pollution1$Shock)
+joined_admissions_pollution1$Pulmonary.Embolism <- as.logical(joined_admissions_pollution1$Pulmonary.Embolism)
+joined_admissions_pollution1$Chest.Infection <- as.logical(joined_admissions_pollution1$Chest.Infection)
+joined_admissions_pollution1$Prominent.Pollution <- as.factor(joined_admissions_pollution1$Prominent.Pollution)
+```
+
+Structure was then reassessed and also datatypes had converted successfully. 
+```{r, echo = TRUE, warning = FALSE}
+str(joined_admissions_pollution1)
+```
+
+
+## 5. Tidy & Manipulate Data I 
+
+The data conforms to the tidy data principles. Since the columns summarize what the admission pertains to, there can be mulitple options, these can not be simplified into long format, so this data must stay in wide format. 
+
+## 6.	Tidy & Manipulate Data II 
+
+A new variable was created from the comorbidity columns previously in step 3 before the data types were changed from integers to logical. A point was added for every comorbidity the patient had to give an overall score. This type of addition is usually done to give an overall index or ranking of the patients overall state of health prior to their admission. The same was done for the medical events that occured during the admission so summarize the severity of the admission. This was done simply by creating a new column using 'admission_data$Comorbidity.Score <- admission_data$Smoker + admission_data$Alcohol + admission_data$Diabetes + admission_data$Hypertension + admission_data$Coronary.Artery.Disease + admission_data$Cardiomyopathy + admission_data$Chronic.Kidney.Disease'
+
+## 7.	Scan I 
+
+Sums of the missing data in each column were found through the 'joined_admissions_pollution1 %>% is.na() %>% colSums()'.
+
+```{r, echo = TRUE, warning = FALSE}
+joined_admissions_pollution1 %>% is.na() %>% colSums()
+```
+
+Initially the column that expresses the BType.Natriuretic.Peptide was removed using the subset function. This pathology test is frequently performed and is only indicative of cardiac stress, therefore the dataset can still be meaningful with the removal of this dataset as majority of the data is missing from this column, approximately 57%. Meaningful analysis can still take place without this variable. In addition, discharge date was omitted as the total days admission has already been recorded in a differnt column. This was done using the subset function where -c is used to remove the column listed.
+
+```{r, echo = TRUE, warning = FALSE}
+joined_admissions_pollution1 = subset(joined_admissions_pollution1, select = -c(BType.Natriuretic.Peptide, Discharge.Date))
+
+```
+
+In the case of the numeric data type which included blood result variables, columns missing less than 10% of total data were treated by replacing missing variables with the column mean using the impute function.
+       
+```{r, echo = TRUE, warnings = FALSE}
+joined_admissions_pollution1$Leukocytes.Count <- impute(joined_admissions_pollution1$Leukocytes.Count, fun = mean)
+joined_admissions_pollution1$Haemoglobin <- impute(joined_admissions_pollution1$Haemoglobin, fun = mean)
+joined_admissions_pollution1$Platelets <- impute(joined_admissions_pollution1$Platelets, fun = mean)
+joined_admissions_pollution1$Glucose <- impute(joined_admissions_pollution1$Glucose, fun = mean)
+joined_admissions_pollution1$Urea <- impute(joined_admissions_pollution1$Urea, fun = mean)
+joined_admissions_pollution1$Creatinine <- impute(joined_admissions_pollution1$Creatinine, fun = mean)
+joined_admissions_pollution1$Ejection.Fraction <- impute(joined_admissions_pollution1$Ejection.Fraction, fun = mean)
+```
+
+In the case of the categorical data type which included chest.infection and medical.event.total, columns missing less than 10% of total data were treated by replacing missing variables with the column mode also using the impute function.
+```{r, echo = TRUE, warnings = FALSE}
+joined_admissions_pollution1$chest.infection <- impute(joined_admissions_pollution1$chest.infection, fun = mode)
+joined_admissions_pollution1$medical.event.total <- impute(joined_admissions_pollution1$medical.event.total, fun = mode)
+```
+
+Unfortunately of the 15,757 original data entries, 5655 were missing admission dates. As this dataset is designed to answer the question of 'do more hospital admissions occur when there is higher air pollution', the rows which are missing the admission datecan not be used to useful comparison. As it is a date data type, missing data can not be replace with the mean or the mode as it is meaningless. Therefore all the rows with missing admission dates were removed from this dataset using the complete.cases function.
+
+Additionally, there were large amounts of the air pollution data was missing leaving no correlated pollution data for the admission date, approximately 58%, therefore it was decided not to use the rows where this data was missing was removed from the dataset.This was done by addressing all the other missing data columns first, the using the complete.cases arguement to effectively remove the large amounts of missing pollution data and admission date data most efficiently. /The colSums() function was checked again to reassess missing data and a total of 6524 complete records remained.
+
+```{r, echo = TRUE, warnings = FALSE}
+complete_admissionpollution <- joined_admissions_pollution1[complete.cases(joined_admissions_pollution1),]
+complete_admissionpollution %>% is.na() %>% colSums()
+
+```
+
+## 8.	Scan II
+
+Levels were checked for all categorical variables to ensure there weren't any impossible values and all the factor variables were found to have appropriate number of levels. Then all numerical variables were scanned for outliers. In total there were 24 different numerical variables. Multiple techniques to scan for outliers was applied, including univariate and multivariate techniques.  
+
+The first variable that was assessed was total comorbidities using the univariate boxplot method. This method was used because at this point it was uncertain whether the data was parametric or non parametric. The outlier in this variable was kept as a comorbidity score of 7 does not fall under the error.
+
+```{r, echo = TRUE, warning = FALSE}
+complete_admissionpollution$Comorbidity.Total %>%  
+  boxplot(main = "Total Comorbidities", ylab = "Cormorbidity Number", col = "grey")
+```
+
+Outliers for the Age variable were checked using the z.scores method. One outlier was found to be the age 106, however this was not suspected as one of the errors including "Data entry errors", "Measurement errors", "Intentional errors", "Data processing errors" or "Sampling errors" so the decision was made to leave this outlier as it is most likely not outside of the global range even if it is an outlier in this dataset. 
+
+```{r, echo = TRUE, warning = FALSE}
+min(complete_admissionpollution$Age)
+max(complete_admissionpollution$Age)
+ 
+z.scores <- complete_admissionpollution$Total.Days.Admitted %>%  
+  outliers::scores(type = "z")
+z.scores %>% summary()
+
+length( which( abs(z.scores) >3 ))
+
+```
+The next variables that were checked were Age and Total days admitted, this was completed using a multivariate scatterplot method to put the total days admitted into context. It was evident in the plot that there was an outlier in total days admitted. This outlier could removed using the z-score method as the number of outliers were small for example 'Total.Days.Admitted_clean<- complete_admissionpollution$Total.Days.Admitted [ - which( abs(z.scores) >3 )]'. The two datasets appear to be positively correlated which is consistent with what would be expected as people age their admission length increase. 
+```{r, echo = TRUE, warnings = FALSE}
+complete_admissionpollution %>% 
+plot(Total.Days.Admitted ~ Age, 
+       data = ., 
+       ylab = "Total Days Admitted", xlab = "Age", main = "Age against Total Days Admitted")
+```
+```{r, warning = FALSE}
+z.scores.TDA <- complete_admissionpollution$Total.Days.Admitted %>%  
+  outliers::scores(type = "z")
+
+clean.total.admission.days <- complete_admissionpollution$Total.Days.Admitted[ - which( abs(z.scores) >3 )]
+
+complete_admissionpollution$Total.Days.Admitted[which( abs(z.scores) >3 )] %>% impute(clean.total.admission.days, fun = mean)
+```
+
+The next variables which were checked for outliers were days admitted in ICU against the number of medical events that occured during the admission. It would be expected that the more medical events that occured, the longer the ICU admission would be. This was done using a multivariate boxplot as the data is non parametric. There were many outliers in this analysis so they could be replaced with the mean value as number of outliers was large so it would not be recommended to remove them.
+
+```{r, echo = TRUE, warnings = FALSE}
+
+boxplot(complete_admissionpollution$Days.ICU.Admission ~ complete_admissionpollution$Medical.Event.Total,
+        main = "Days in ICU against Number of Medical events", ylab = "ICU Days Admitted", xlab = "Medical Events Total")
+
+```
+
+```{r, echo = TRUE, warnings = FALSE}
+
+```
+
+Next, the blood test numerical variables were checked together using the mahalanobis method through a subset of the dataset. There were a large amount of outliers in this dataset. It is most probably a large number because the dataset is large and there is lots of heterogenety in the dataset resulting in large amounts of variation in the patient blood results. Blood result outliers were not removed. 
+
+```{r, echo = TRUE, warnings = FALSE}
+bloodsubset1 <- complete_admissionpollution %>%  
+  dplyr::select(Haemoglobin, Leukocytes.Count, Platelets, Glucose, Creatinine, Urea,  Ejection.Fraction)
+
+Mahalanobis.bloods1 <- mvn(data = bloodsubset1, 
+               multivariateOutlierMethod = "quan", 
+               showOutliers = TRUE)
+
+
+```
+
+A further two quantitative measurements Air Quality and Humidity were checked using a scatterplot. It was found to have some outliers, which could be removed using the previous function mentioned.
+
+```{r, echo = TRUE, warnings = FALSE}
+complete_admissionpollution %>% 
+  plot(Humidity ~ Air.Quality.Index , 
+       data = ., 
+       ylab = "Humidity", xlab = "Air.Quality.Index", main = "Humidity by Air Quality Index")
+```
+
+
+Ammonia variable was checked for outliers against minimum temperature using a scatterplot. As seen below, there were no outliers for temperature as they are all within true values, however there are outliers for ammonia, which could or replaced with the mean.
+
+```{r, echo = TRUE, warning = FALSE}
+complete_admissionpollution %>% 
+  plot(Ammonia  ~ Minimum.Temperature , 
+       data = ., 
+       ylab = "Ammonia", xlab = "Temperature", main = "Ammonia by Temperature")
+```
+Ozone was checked for outliers against maximum temperature. There appears to be no outliers within each of the variables. 
+```{r, echo = TRUE, warning = FALSE}
+complete_admissionpollution %>% 
+  plot(Ozone ~ Maximum.Temperature,  
+       data = ., 
+       ylab = "Ozone", xlab = "Temperature", main = "Ozone by Temperature")
+```
+
+## 9.	Transform 
+
+Finally a transformation was applied to a variable Particulate Matter10 which was a non normally distributed variable. As seen in the histogram, there is a rightward skew to the data. 
+```{r, echo = TRUE, warning = FALSE}
+hist(complete_admissionpollution$Particulate.Matter10)
+```
+The transformation that was applied was a BoxCox which helped to normalize the data.
+```{r, echo = TRUE, warning = FALSE}
+boxcox_pm10 <- BoxCox(complete_admissionpollution$Particulate.Matter10, lambda = "auto")
+attr(boxcox_pm10, which = "lambda")
+hist(boxcox_pm10)
+
+```
+
+
+
+<br>
+<br>
+## References:
+
+The dataset was obtained from:
+Bollepalli, S.C.; Sahani, A.K.; Aslam, N.; Mohan, B.; Kulkarni, K.; Goyal, A.; Singh, B.; Singh, G.; Mittal, A.; Tandon, R.; Chhabra, S.T.; Wander, G.S.; Armoundas, A.A. An Optimized Machine Learning Model Accurately Predicts In-Hospital Outcomes at Admission to a Cardiac Unit. Diagnostics 2022, 12, 241. https://doi.org/10.3390/diagnostics12020241
+
 

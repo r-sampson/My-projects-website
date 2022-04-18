@@ -1,5 +1,5 @@
 ---
-title: "MyLabJournal"
+title: "University Projects Portfolio"
 output: html_document
 ---
 
@@ -17,27 +17,25 @@ output: html_document
 <div class="row" style="padding-top: 30px;">
 <div class="col-sm-6">
 
-# **My Lab Journal**
+# **University Projects Portfolio**
 
-This is a template example for lab journaling. Students in Matt Crump's Human Cognition and Performance Lab will use this template to learn R, and other things. Students can replace this text with more fun things. People not in my lab can use this too.
+This is a compilation of my projects completed in R Studio as a part of my graduate certificate in Data Science at RMIT University. 
 
-## How to use
 
-1. fork the repo for this website and follow instructions on read me to get set up. [https://github.com/CrumpLab/LabJournalWebsite](https://github.com/CrumpLab/LabJournalWebsite)
+## RStudio Projects:
 
-2. Blog/journal what you are doing in R, by editing the Journal.Rmd. See the [Journal page](https://crumplab.github.io/LabJournalWebsite/Journal.html) for an example of what to do to get started learning R.
+### 1. Weather & Fatality Rates
+The first project I worked on looked at open source data from Our World in Data named Fatality Rates in the US Due to Weather Events. The project was based on taking open source data, importing it into RStudio and using wrangling techniques to create a data set suitable for statistical analysis. Techniques used include conversion of data types, pivots to conform to tidy data principles, providing summary statistics, joining new variable lists to data set and data sub-setting.
 
-3. See the [links page](https://crumplab.github.io/LabJournalWebsite/Links.html) for lots of helpful links on learning R.
+### 2. Pollution & Hospital Admissions
+The second project I worked on used two open source data sets from Kaggle named Hospital Admissions Data Two Year Hospital Admissions and Discharge Data from Hero DMC Heart Institution. The aim of this project was to merge the two data sets to create insight around Hospital Admissions at the DMC Heart Institute in India and pollution levels on corresponding admission dates. New variables were created for analysis, missing values were addressed and outliers were idenfitied. 
 
-4. Change everything to make it your own.
+
 
 
 </div>
 <div class="col-sm-6">
 
-### [Crump Lab: Human Cognition and Performance](https://crumplab.github.io)
 
-<a href = "https://crumplab.github.io">
-![](images/logo.png)
 </a>
 </div>
