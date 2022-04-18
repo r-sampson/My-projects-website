@@ -9,10 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Rachael Sampson s3920151" />
 
 
-<title>Data Wrangling Assessment Task 3: Dataset challenge</title>
+<title>Pollution &amp; Hospital Admissions</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -339,14 +338,11 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Data Wrangling Assessment Task 3: Dataset challenge</h1>
-<h4 class="author">Rachael Sampson s3920151</h4>
+<h1 class="title toc-ignore">Pollution &amp; Hospital Admissions</h1>
 
 </div>
 
 
-<div id="required-packages" class="section level2">
-<h2>2. Required packages</h2>
 <p>The following packages were loaded into RStudio to for data wrangling and to reproduce this report: library(readr)<br />
 library(foreign)</p>
 <p>library(rvest)<br />
@@ -368,9 +364,6 @@ library(validate)
 library(Hmisc)
 library(MVN)
 library(forecast)</code></pre>
-</div>
-<div id="data" class="section level2">
-<h2>3. Data</h2>
 <p>The data sets used for this report were sourced from Kaggle which is an open source data website (<a href="https://www.kaggle.com/ashishsahani/hospital-admissions-data" class="uri">https://www.kaggle.com/ashishsahani/hospital-admissions-data</a>). Titled “Hospital Admissions Data Two Year Hospital Admissions and Discharge Data from Hero DMC Heart Institute”, the data was available for download in 2 different dataset CSV files collected from a hospital in Ludhiana, India. The variables from the first dataset comprise of hospital admission rates by date, with correlating data about each patients hospital admission. This included blood results, comorbodities of the patient, length of stay in hospital and also information about the medical events whilst in hospital. The second dataset comprises variables including pollution levels, common markers of pollution measured on dates correlating to the hospital admission dates in the first data set. The data was loaded into R using the ‘read.csv’ function.</p>
 <pre class="r"><code>admission_data &lt;- read.csv(&quot;HDHI Admission data1.csv&quot;)
 pollution_data &lt;- read.csv(&quot;HDHI Pollution Data1.csv&quot;)</code></pre>
@@ -667,9 +660,6 @@ admission_data$Admission.Type &lt;- str_replace_all(admission_data$Admission.Typ
 colnames(pollution_data1)&lt;- c(&quot;Admission.Date&quot;,&quot;Air.Quality.Index&quot;, &quot;Particulate.Matter2.5&quot;, &quot;Particulate.Matter10&quot;, &quot;Nitrogren.Dioxide&quot;, &quot;Ammonia&quot;,&quot;Sulpher.Dioxide&quot;,&quot;Carbon.Monoxide&quot;,&quot;Ozone&quot;, &quot;Prominent.Pollution&quot;, &quot;Maximum.Temperature&quot;, &quot;Minimum.Temperature&quot;, &quot;Humidity&quot;)</code></pre>
 <p>The two datasets were then merged to create one large dataset with 70 variables using a left join using the “Admission.Date” variable as the joiner.</p>
 <pre class="r"><code>joined_admissions_pollution1 &lt;- left_join(admission_data, pollution_data1, by = c(&quot;Admission.Date&quot;))</code></pre>
-</div>
-<div id="understand" class="section level2">
-<h2>4. Understand</h2>
 <p>The structure of the new data frame was assessed after the merge.</p>
 <pre class="r"><code>str(joined_admissions_pollution1)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    15757 obs. of  70 variables:
@@ -868,17 +858,8 @@ joined_admissions_pollution1$Prominent.Pollution &lt;- as.factor(joined_admissio
 ##  $ Maximum.Temperature                         : int  40 40 40 40 40 40 40 40 40 40 ...
 ##  $ Minimum.Temperature                         : int  24 24 24 24 24 24 24 24 24 24 ...
 ##  $ Humidity                                    : int  16 16 16 16 16 16 16 16 16 16 ...</code></pre>
-</div>
-<div id="tidy-manipulate-data-i" class="section level2">
-<h2>5. Tidy &amp; Manipulate Data I</h2>
 <p>The data conforms to the tidy data principles. Since the columns summarize what the admission pertains to, there can be mulitple options, these can not be simplified into long format, so this data must stay in wide format.</p>
-</div>
-<div id="tidy-manipulate-data-ii" class="section level2">
-<h2>6. Tidy &amp; Manipulate Data II</h2>
 <p>A new variable was created from the comorbidity columns previously in step 3 before the data types were changed from integers to logical. A point was added for every comorbidity the patient had to give an overall score. This type of addition is usually done to give an overall index or ranking of the patients overall state of health prior to their admission. The same was done for the medical events that occured during the admission so summarize the severity of the admission. This was done simply by creating a new column using ‘admission_data<span class="math inline">\(Comorbidity.Score &lt;- admission_data\)</span>Smoker + admission_data<span class="math inline">\(Alcohol + admission_data\)</span>Diabetes + admission_data<span class="math inline">\(Hypertension + admission_data\)</span>Coronary.Artery.Disease + admission_data<span class="math inline">\(Cardiomyopathy + admission_data\)</span>Chronic.Kidney.Disease’</p>
-</div>
-<div id="scan-i" class="section level2">
-<h2>7. Scan I</h2>
 <p>Sums of the missing data in each column were found through the ‘joined_admissions_pollution1 %&gt;% is.na() %&gt;% colSums()’.</p>
 <pre class="r"><code>joined_admissions_pollution1 %&gt;% is.na() %&gt;% colSums()</code></pre>
 <pre><code>##                                Serial.Number 
@@ -1174,9 +1155,6 @@ complete_admissionpollution %&gt;% is.na() %&gt;% colSums()</code></pre>
 ##                                            0 
 ##                                     Humidity 
 ##                                            0</code></pre>
-</div>
-<div id="scan-ii" class="section level2">
-<h2>8. Scan II</h2>
 <p>Levels were checked for all categorical variables to ensure there weren’t any impossible values and all the factor variables were found to have appropriate number of levels. Then all numerical variables were scanned for outliers. In total there were 24 different numerical variables. Multiple techniques to scan for outliers was applied, including univariate and multivariate techniques.</p>
 <p>The first variable that was assessed was total comorbidities using the univariate boxplot method. This method was used because at this point it was uncertain whether the data was parametric or non parametric. The outlier in this variable was kept as a comorbidity score of 7 does not fall under the error.</p>
 <pre class="r"><code>complete_admissionpollution$Comorbidity.Total %&gt;%  
@@ -1240,9 +1218,6 @@ Mahalanobis.bloods1 &lt;- mvn(data = bloodsubset1,
        data = ., 
        ylab = &quot;Ozone&quot;, xlab = &quot;Temperature&quot;, main = &quot;Ozone by Temperature&quot;)</code></pre>
 <p><img src="Links_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
-</div>
-<div id="transform" class="section level2">
-<h2>9. Transform</h2>
 <p>Finally a transformation was applied to a variable Particulate Matter10 which was a non normally distributed variable. As seen in the histogram, there is a rightward skew to the data.</p>
 <pre class="r"><code>hist(complete_admissionpollution$Particulate.Matter10)</code></pre>
 <p><img src="Links_files/figure-html/unnamed-chunk-34-1.png" width="672" /> The transformation that was applied was a BoxCox which helped to normalize the data.</p>
@@ -1251,9 +1226,8 @@ attr(boxcox_pm10, which = &quot;lambda&quot;)</code></pre>
 <pre><code>## [1] -0.02862316</code></pre>
 <pre class="r"><code>hist(boxcox_pm10)</code></pre>
 <p><img src="Links_files/figure-html/unnamed-chunk-35-1.png" width="672" /></p>
-<p><br> <br> ## References:</p>
+<p><br> <br> # References:</p>
 <p>The dataset was obtained from: Bollepalli, S.C.; Sahani, A.K.; Aslam, N.; Mohan, B.; Kulkarni, K.; Goyal, A.; Singh, B.; Singh, G.; Mittal, A.; Tandon, R.; Chhabra, S.T.; Wander, G.S.; Armoundas, A.A. An Optimized Machine Learning Model Accurately Predicts In-Hospital Outcomes at Admission to a Cardiac Unit. Diagnostics 2022, 12, 241. <a href="https://doi.org/10.3390/diagnostics12020241" class="uri">https://doi.org/10.3390/diagnostics12020241</a></p>
-</div>
 
 
 

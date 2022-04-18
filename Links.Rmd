@@ -14,8 +14,6 @@ output:
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 ```
 
-
-## 2. Required packages
 The following packages were loaded into RStudio to for data wrangling and to reproduce this report:
 library(readr)  
 library(foreign)  
@@ -56,7 +54,6 @@ library(MVN)
 library(forecast)
 ```
 
-## 3. Data
 
 The data sets used for this report were sourced from Kaggle which is an open source data website (https://www.kaggle.com/ashishsahani/hospital-admissions-data). Titled "Hospital Admissions Data Two Year Hospital Admissions and Discharge Data from Hero DMC Heart Institute", the data was available for download in 2 different dataset CSV files collected from a hospital in Ludhiana, India. The variables from the first dataset comprise of hospital admission rates by date, with correlating data about each patients hospital admission. This included blood results, comorbodities of the patient, length of stay in hospital and also information about the medical events whilst in hospital. The second dataset comprises variables including pollution levels, common markers of pollution measured on dates correlating to the hospital admission dates in the first data set. The data was loaded into R using the 'read.csv' function.
 
@@ -128,7 +125,6 @@ The two datasets were then merged to create one large dataset with 70 variables 
 joined_admissions_pollution1 <- left_join(admission_data, pollution_data1, by = c("Admission.Date"))
 ```
 
-## 4. Understand 
 
 The structure of the new data frame was assessed after the merge. 
 ```{r, echo = TRUE, warning = FALSE}
@@ -195,16 +191,10 @@ Structure was then reassessed and also datatypes had converted successfully.
 str(joined_admissions_pollution1)
 ```
 
-
-## 5. Tidy & Manipulate Data I 
-
 The data conforms to the tidy data principles. Since the columns summarize what the admission pertains to, there can be mulitple options, these can not be simplified into long format, so this data must stay in wide format. 
 
-## 6.	Tidy & Manipulate Data II 
 
 A new variable was created from the comorbidity columns previously in step 3 before the data types were changed from integers to logical. A point was added for every comorbidity the patient had to give an overall score. This type of addition is usually done to give an overall index or ranking of the patients overall state of health prior to their admission. The same was done for the medical events that occured during the admission so summarize the severity of the admission. This was done simply by creating a new column using 'admission_data$Comorbidity.Score <- admission_data$Smoker + admission_data$Alcohol + admission_data$Diabetes + admission_data$Hypertension + admission_data$Coronary.Artery.Disease + admission_data$Cardiomyopathy + admission_data$Chronic.Kidney.Disease'
-
-## 7.	Scan I 
 
 Sums of the missing data in each column were found through the 'joined_admissions_pollution1 %>% is.na() %>% colSums()'.
 
@@ -246,8 +236,6 @@ complete_admissionpollution <- joined_admissions_pollution1[complete.cases(joine
 complete_admissionpollution %>% is.na() %>% colSums()
 
 ```
-
-## 8.	Scan II
 
 Levels were checked for all categorical variables to ensure there weren't any impossible values and all the factor variables were found to have appropriate number of levels. Then all numerical variables were scanned for outliers. In total there were 24 different numerical variables. Multiple techniques to scan for outliers was applied, including univariate and multivariate techniques.  
 
@@ -339,7 +327,6 @@ complete_admissionpollution %>%
        ylab = "Ozone", xlab = "Temperature", main = "Ozone by Temperature")
 ```
 
-## 9.	Transform 
 
 Finally a transformation was applied to a variable Particulate Matter10 which was a non normally distributed variable. As seen in the histogram, there is a rightward skew to the data. 
 ```{r, echo = TRUE, warning = FALSE}
@@ -357,7 +344,7 @@ hist(boxcox_pm10)
 
 <br>
 <br>
-## References:
+# References:
 
 The dataset was obtained from:
 Bollepalli, S.C.; Sahani, A.K.; Aslam, N.; Mohan, B.; Kulkarni, K.; Goyal, A.; Singh, B.; Singh, G.; Mittal, A.; Tandon, R.; Chhabra, S.T.; Wander, G.S.; Armoundas, A.A. An Optimized Machine Learning Model Accurately Predicts In-Hospital Outcomes at Admission to a Cardiac Unit. Diagnostics 2022, 12, 241. https://doi.org/10.3390/diagnostics12020241
