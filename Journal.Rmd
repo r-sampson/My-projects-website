@@ -28,7 +28,7 @@ library(tidyr)
 library(glue)
 
 ```{r, echo = TRUE, warning = FALSE, results = FALSE}
-setwd("~/Data Wrangling R files/Data")
+
 library(readr)
 library(foreign) 
 library(rvest) 
@@ -44,7 +44,7 @@ library(glue)
 A data set was sourced from 'Our World in Data' website and read into the RStudio environment using the 'read.csv'.  
 
 ```{r}
-fatalityrates1 <- read.csv("fatality-rates-us-due-to-weather-events.csv")
+fatalityrates1 <- read.csv("fatality-rates-us-due-to-weather-events1.csv")
 ```
 
 

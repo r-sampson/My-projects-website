@@ -1,1 +1,9 @@
-base
+readr
+foreign
+rvest
+knitr
+dplyr
+openxlsx
+magrittr
+tidyr
+glue

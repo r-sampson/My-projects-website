@@ -1,11 +1,11 @@
-name: "MyLabJournal"
+name: "University Projects Portfolio"
 navbar:
-  title: "MyLabJournal"
+  title: "University Projects Portfolio"
   left:
-    - text: "Home"
+    - text: "About"
       href: index.html
-    - text: "Journal"
+    - text: "Weather & Fatality Rates"
       href: Journal.html
-    - text: "Links"
+    - text: "Pollution & Hospital Admissions"
       href: Links.html
 output_dir: "docs"

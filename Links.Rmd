@@ -68,8 +68,8 @@ library(forecast)
 The data sets used for this report were sourced from Kaggle which is an open source data website (https://www.kaggle.com/ashishsahani/hospital-admissions-data). Titled "Hospital Admissions Data Two Year Hospital Admissions and Discharge Data from Hero DMC Heart Institute", the data was available for download in 2 different dataset CSV files collected from a hospital in Ludhiana, India. The variables from the first dataset comprise of hospital admission rates by date, with correlating data about each patients hospital admission. This included blood results, comorbodities of the patient, length of stay in hospital and also information about the medical events whilst in hospital. The second dataset comprises variables including pollution levels, common markers of pollution measured on dates correlating to the hospital admission dates in the first data set. The data was loaded into R using the 'read.csv' function.
 
 ```{r, echo = TRUE, warning = FALSE}
-admission_data <- read.csv("HDHI Admission data.csv")
-pollution_data <- read.csv("HDHI Pollution Data.csv")
+admission_data <- read.csv("HDHI Admission data1.csv")
+pollution_data <- read.csv("HDHI Pollution Data1.csv")
 ```
 
 Head() and tail() show a snapshot of both the data sets. 
