@@ -14,13 +14,6 @@ output:
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 ```
 
----
-title: "Data Wrangling Assessment Task 3: Dataset challenge"
-author: "Rachael Sampson s3920151"
-subtitle: 
-output:
-  html_notebook: default
----
 
 ## 2. Required packages
 The following packages were loaded into RStudio to for data wrangling and to reproduce this report:
